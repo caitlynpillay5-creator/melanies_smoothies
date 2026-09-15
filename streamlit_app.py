@@ -10,7 +10,9 @@ import requests
 
 st.title("🥤 Customise your Smoothie! 🥤")
 
-st.write("Choose the fruits you want in your custom Smoothie!")
+st.write(
+    """Choose the fruits you want in your custom Smoothie!"""
+)
 
 
 # ---------------------------------------------------------
@@ -30,6 +32,7 @@ st.write(
 # ---------------------------------------------------------
 
 cnx = st.connection("snowflake")
+
 session = cnx.session()
 
 
@@ -66,25 +69,6 @@ if ingredients_list:
     for fruit_chosen in ingredients_list:
         ingredients_string += fruit_chosen + " "
 
-    # -----------------------------------------------------
-    # SMOOTHIEFROOT API
-    # -----------------------------------------------------
-
-    st.subheader("🍉 SmoothieFroot Information")
-
-    smoothiefroot_response = requests.get(
-        "https://my.smoothiefroot.com/api/fruit/watermelon"
-    )
-
-    sf_df = st.dataframe(
-        data=smoothiefroot_response.json(),
-        use_container_width=True
-    )
-
-
-    # -----------------------------------------------------
-    # CREATE SQL INSERT STATEMENT
-    # -----------------------------------------------------
 
     my_insert_stmt = """
         INSERT INTO smoothies.public.orders
@@ -93,14 +77,12 @@ if ingredients_list:
                 '""" + name_on_order + """')
     """
 
+
     st.write(my_insert_stmt)
 
 
-    # -----------------------------------------------------
-    # SUBMIT ORDER
-    # -----------------------------------------------------
-
     time_to_insert = st.button("Submit Order")
+
 
     if time_to_insert:
 
@@ -110,3 +92,18 @@ if ingredients_list:
             "Your Smoothie is ordered! 🥤",
             icon="✅"
         )
+
+
+# ---------------------------------------------------------
+# SMOOTHIEFROOT API
+# ---------------------------------------------------------
+
+st.subheader("🍉 SmoothieFroot Information")
+
+smoothiefroot_response = requests.get(
+    "https://my.smoothiefroot.com/api/fruit/watermelon"
+)
+
+
+# Display API response
+st.write(smoothiefroot_response.json())
