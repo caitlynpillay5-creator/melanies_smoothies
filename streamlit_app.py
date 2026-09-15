@@ -72,7 +72,7 @@ if ingredients_list:
     st.subheader("🍉 SmoothieFroot Information")
 
     smoothiefroot_response = requests.get(
-    "https://my.smoothiefroot.com/api/fruit/watermelon"
+    "https://my.smoothiefroot.com/api/fruit/watermelon", 
         
     my_insert_stmt = """
         INSERT INTO smoothies.public.orders
