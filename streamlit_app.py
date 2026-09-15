@@ -4,15 +4,19 @@ from snowflake.snowpark.functions import col
 import requests
 
 
-# Write directly to the app
+# ---------------------------------------------------------
+# APP TITLE
+# ---------------------------------------------------------
+
 st.title("🥤 Customise your Smoothie! 🥤")
 
-st.write(
-    """Choose the fruits you want in your custom Smoothie!"""
-)
+st.write("Choose the fruits you want in your custom Smoothie!")
 
 
-# Name of smoothie
+# ---------------------------------------------------------
+# NAME OF SMOOTHIE
+# ---------------------------------------------------------
+
 name_on_order = st.text_input("Name of Smoothie")
 
 st.write(
@@ -21,20 +25,29 @@ st.write(
 )
 
 
-# Connect to Snowflake
+# ---------------------------------------------------------
+# CONNECT TO SNOWFLAKE
+# ---------------------------------------------------------
+
 cnx = st.connection("snowflake")
 session = cnx.session()
 
 
-# Get fruit options
-my_dataframe = session.table(
-    "smoothies.public.fruit_options"
-).select(
-    col("FRUIT_NAME")
+# ---------------------------------------------------------
+# GET FRUIT OPTIONS FROM SNOWFLAKE
+# ---------------------------------------------------------
+
+my_dataframe = (
+    session
+    .table("smoothies.public.fruit_options")
+    .select(col("FRUIT_NAME"))
 )
 
 
-# Choose ingredients
+# ---------------------------------------------------------
+# ALLOW USER TO SELECT INGREDIENTS
+# ---------------------------------------------------------
+
 ingredients_list = st.multiselect(
     "Choose up to 5 ingredients:",
     my_dataframe,
@@ -42,31 +55,37 @@ ingredients_list = st.multiselect(
 )
 
 
-# If ingredients have been selected
+# ---------------------------------------------------------
+# CREATE AND SUBMIT ORDER
+# ---------------------------------------------------------
+
 if ingredients_list:
 
     ingredients_string = ""
 
-    # Loop through each selected fruit
     for fruit_chosen in ingredients_list:
-
         ingredients_string += fruit_chosen + " "
 
-        # Get nutrition information for this fruit
-        smoothiefroot_response = requests.get(
-            "https://my.smoothiefroot.com/api/fruit/" + fruit_chosen
-        )
+    # -----------------------------------------------------
+    # SMOOTHIEFROOT API
+    # -----------------------------------------------------
 
-        # Display nutrition information
-        st.write("Nutrition information for:", fruit_chosen)
+    st.subheader("🍉 SmoothieFroot Information")
 
-        sf_df = st.dataframe(
-            data=smoothiefroot_response.json(),
-            use_container_width=True
-        )
+    smoothiefroot_response = requests.get(
+        "https://my.smoothiefroot.com/api/fruit/watermelon"
+    )
+
+    sf_df = st.dataframe(
+        data=smoothiefroot_response.json(),
+        use_container_width=True
+    )
 
 
-    # Create the INSERT statement
+    # -----------------------------------------------------
+    # CREATE SQL INSERT STATEMENT
+    # -----------------------------------------------------
+
     my_insert_stmt = """
         INSERT INTO smoothies.public.orders
         (ingredients, name_on_order)
@@ -77,9 +96,11 @@ if ingredients_list:
     st.write(my_insert_stmt)
 
 
-    # Submit order button
-    time_to_insert = st.button("Submit Order")
+    # -----------------------------------------------------
+    # SUBMIT ORDER
+    # -----------------------------------------------------
 
+    time_to_insert = st.button("Submit Order")
 
     if time_to_insert:
 
