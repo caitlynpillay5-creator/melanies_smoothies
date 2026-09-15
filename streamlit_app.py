@@ -106,4 +106,4 @@ if ingredients_list:
 
 
 # Display API response
-st.write(smoothiefroot_response.json())
+# st.write(smoothiefroot_response.json())
