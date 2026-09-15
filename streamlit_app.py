@@ -4,19 +4,15 @@ from snowflake.snowpark.functions import col
 import requests
 
 
-# ---------------------------------------------------------
-# APP TITLE
-# ---------------------------------------------------------
-
+# Write directly to the app
 st.title("🥤 Customise your Smoothie! 🥤")
 
-st.write("Choose the fruits you want in your custom Smoothie!")
+st.write(
+    """Choose the fruits you want in your custom Smoothie!"""
+)
 
 
-# ---------------------------------------------------------
-# NAME OF SMOOTHIE
-# ---------------------------------------------------------
-
+# Name of smoothie
 name_on_order = st.text_input("Name of Smoothie")
 
 st.write(
@@ -25,29 +21,20 @@ st.write(
 )
 
 
-# ---------------------------------------------------------
-# CONNECT TO SNOWFLAKE
-# ---------------------------------------------------------
-
+# Connect to Snowflake
 cnx = st.connection("snowflake")
 session = cnx.session()
 
 
-# ---------------------------------------------------------
-# GET FRUIT OPTIONS FROM SNOWFLAKE
-# ---------------------------------------------------------
-
-my_dataframe = (
-    session
-    .table("smoothies.public.fruit_options")
-    .select(col("FRUIT_NAME"))
+# Get fruit options
+my_dataframe = session.table(
+    "smoothies.public.fruit_options"
+).select(
+    col("FRUIT_NAME")
 )
 
 
-# ---------------------------------------------------------
-# ALLOW USER TO SELECT INGREDIENTS
-# ---------------------------------------------------------
-
+# Choose ingredients
 ingredients_list = st.multiselect(
     "Choose up to 5 ingredients:",
     my_dataframe,
@@ -55,54 +42,31 @@ ingredients_list = st.multiselect(
 )
 
 
-# ---------------------------------------------------------
-# PROCESS SELECTED INGREDIENTS
-# ---------------------------------------------------------
-
+# If ingredients have been selected
 if ingredients_list:
 
     ingredients_string = ""
 
-    st.subheader("🍎 Nutrition Information")
-
-
-    # -----------------------------------------------------
-    # GET NUTRITION INFORMATION FOR EACH SELECTED FRUIT
-    # -----------------------------------------------------
-
+    # Loop through each selected fruit
     for fruit_chosen in ingredients_list:
 
         ingredients_string += fruit_chosen + " "
 
-        st.write("### " + fruit_chosen)
-
-        # Convert fruit name into API-friendly format
-        search_fruit = fruit_chosen.lower().replace(" ", "")
-
+        # Get nutrition information for this fruit
         smoothiefroot_response = requests.get(
-            "https://my.smoothiefroot.com/api/fruit/" + search_fruit
+            "https://my.smoothiefroot.com/api/fruit/" + fruit_chosen
         )
 
-        # Check that API request worked
-        if smoothiefroot_response.status_code == 200:
+        # Display nutrition information
+        st.write("Nutrition information for:", fruit_chosen)
 
-            st.dataframe(
-                data=smoothiefroot_response.json(),
-                use_container_width=True
-            )
-
-        else:
-
-            st.warning(
-                "Nutrition information could not be found for "
-                + fruit_chosen
-            )
+        sf_df = st.dataframe(
+            data=smoothiefroot_response.json(),
+            use_container_width=True
+        )
 
 
-    # -----------------------------------------------------
-    # CREATE SQL INSERT STATEMENT
-    # -----------------------------------------------------
-
+    # Create the INSERT statement
     my_insert_stmt = """
         INSERT INTO smoothies.public.orders
         (ingredients, name_on_order)
@@ -110,12 +74,12 @@ if ingredients_list:
                 '""" + name_on_order + """')
     """
 
+    st.write(my_insert_stmt)
 
-    # -----------------------------------------------------
-    # SUBMIT ORDER
-    # -----------------------------------------------------
 
+    # Submit order button
     time_to_insert = st.button("Submit Order")
+
 
     if time_to_insert:
 
@@ -125,4 +89,3 @@ if ingredients_list:
             "Your Smoothie is ordered! 🥤",
             icon="✅"
         )
-
