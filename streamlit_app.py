@@ -98,11 +98,11 @@ if ingredients_list:
 # SMOOTHIEFROOT API
 # ---------------------------------------------------------
 
-st.subheader("🍉 SmoothieFroot Information")
+# st.subheader("🍉 SmoothieFroot Information")
 
-smoothiefroot_response = requests.get(
-    "https://my.smoothiefroot.com/api/fruit/watermelon"
-)
+# smoothiefroot_response = requests.get(
+#   "https://my.smoothiefroot.com/api/fruit/watermelon"
+#)
 
 
 # Display API response
